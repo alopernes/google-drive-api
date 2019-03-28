@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::create(__DIR__);
+$dotenv->load();
 
 if (php_sapi_name() != 'cli') {
     throw new Exception('This application must be run on the command line.');
@@ -139,8 +141,7 @@ if ($jobNumber && $folderName) {
 $client = getClient();
 $service = new Google_Service_Drive($client);
 
-// TODO: Template Folder ID
-$templateId = '{ TEMPLATE FOLDER ID }';
+$templateId = getenv('TEMPLATE_FOLDER_ID');
 $optParams = parameter($templateId);
 
 $results = $service->files->listFiles($optParams);
@@ -156,8 +157,7 @@ if (count($allFiles->getFiles()) == 0) {
            print "Folder already exists.\n";
            exit;
        } else {
-           // TODO: Change the name to the parent main folder
-            if (isCondition($file) && $file->getName() == 'Automaton') {
+            if (isCondition($file) && $file->getName() == getenv('MAIN_FOLDER')) {
                $parentMainFolderId = $file->getId();
                $parentFolderId = createFolders($parentFolderName, $service, $parentMainFolderId, true);
            }

@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
+$dotenv = Dotenv\Dotenv::create(__DIR__);
+$dotenv->load();
 
 if (php_sapi_name() != 'cli') {
     throw new Exception('This application must be run on the command line.');
@@ -78,8 +80,7 @@ if ($jobNumber && $folderName) {
 $client = getClient();
 $service = new Google_Service_Drive($client);
 
-// TODO: Archived Folder ID
-$archiveID = '{ Archived Folder ID }';
+$archiveID = getenv('ARCHIVED_FOLDER_ID');
 $allFiles = $service->files->listFiles();
 $foundFlag = false;
 

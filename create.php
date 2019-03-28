@@ -140,7 +140,7 @@ $client = getClient();
 $service = new Google_Service_Drive($client);
 
 // TODO: Template Folder ID
-$templateId = '{ Template Folder ID }';
+$templateId = '{ TEMPLATE FOLDER ID }';
 $optParams = parameter($templateId);
 
 $results = $service->files->listFiles($optParams);
@@ -152,10 +152,11 @@ if (count($allFiles->getFiles()) == 0) {
     exit;
 } else {
    foreach ($allFiles->getFiles() as $file) {
-       if ($parentFolderName == $file->getName()) {
+       if ($parentFolderName == $file->getName() && isCondition($file)) {
            print "Folder already exists.\n";
            exit;
        } else {
+           // TODO: Change the name to the parent main folder
             if (isCondition($file) && $file->getName() == 'Automaton') {
                $parentMainFolderId = $file->getId();
                $parentFolderId = createFolders($parentFolderName, $service, $parentMainFolderId, true);

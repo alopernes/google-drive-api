@@ -131,7 +131,7 @@ $folderName = trim(fgets(STDIN));
 print "##### STARTING #####.\n";
 
 if ($jobNumber && $folderName) {
-    $parentFolderName = $jobNumber. '_' . $folderName;
+    $parentFolderName = '[' . $jobNumber . '] ' . $folderName;
 } else {
     print "Please input values correctly.\n";
     exit;
@@ -141,33 +141,31 @@ if ($jobNumber && $folderName) {
 $client = getClient();
 $service = new Google_Service_Drive($client);
 
+$mainFolderId = getenv('MAIN_FOLDER_ID');
+$folderUrl = getenv('DRIVE_FOLDER_URL');
 $templateId = getenv('TEMPLATE_FOLDER_ID');
 $optParams = parameter($templateId);
 
 $results = $service->files->listFiles($optParams);
-$allFiles = $service->files->listFiles();
-$parentFolderId = null;
+$allFiles = $service->files->listFiles(['q' => 'trashed=false']);
 
 if (count($allFiles->getFiles()) == 0) {
     print "No files found.\n";
     exit;
 } else {
-   foreach ($allFiles->getFiles() as $file) {
-       if ($parentFolderName == $file->getName() && isCondition($file)) {
-           print "Folder already exists.\n";
-           exit;
-       } else {
-            if (isCondition($file) && $file->getName() == getenv('MAIN_FOLDER')) {
-               $parentMainFolderId = $file->getId();
-               $parentFolderId = createFolders($parentFolderName, $service, $parentMainFolderId, true);
-           }
-       }
-   }
-    
-   if (count($results->getFiles()) == 0 && is_null($parentFolderId)) {
-       print "No files found.\n";
-       exit;
-   } else {
+    foreach ($allFiles->getFiles() as $file) {
+        if ($parentFolderName == $file->getName() && isCondition($file)) {
+            print "Folder already exists.\n";
+            exit;
+        }
+    }
+
+    $parentFolderId = createFolders($parentFolderName, $service, $mainFolderId, true);
+
+    if (count($results->getFiles()) == 0 && is_null($parentFolderId)) {
+        print "No files found.\n";
+        exit;
+    } else {
        foreach ($results->getFiles() as $file) {
             if (isCondition($file)) {
                 $createSubFolderId = createFolders($file, $service, $parentFolderId);
@@ -178,8 +176,9 @@ if (count($allFiles->getFiles()) == 0) {
                 copyFiles($file->getId(), $service, $parentFolderId);
             }
         }
-       
-       print "##### Created successfully! #####\n";
-       exit;
+        print "##### Created successfully! #####\n";
+        print "##### Drive URL : " . $folderUrl . $parentFolderId . "\n";
+        
+        exit;
     }
 }

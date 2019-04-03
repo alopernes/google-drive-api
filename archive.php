@@ -70,7 +70,7 @@ $folderName = trim(fgets(STDIN));
 print "##### Archived Start! #####\n";
 
 if ($jobNumber && $folderName) {
-    $parentFolderName = $jobNumber. '_' . $folderName;
+    $parentFolderName = '[' . $jobNumber . '] ' . $folderName;
 } else {
     print "Please input values correctly.\n";
     exit;
@@ -98,12 +98,12 @@ if (count($allFiles->getFiles()) == 0) {
             $parentData = $service->files->get($file->getId(), array('fields' => 'parents'));
             $previousParents = join(',', $parentData->parents);
             // Move the file to the new folder
-            $file = $service->files->update($file->getId(), $emptyFileMetadata, array(
+            $service->files->update($file->getId(), $emptyFileMetadata, array(
                 'addParents' => $archiveID,
                 'removeParents' => $previousParents,
                 'fields' => 'id, parents'));
-           
-           print "##### Archived Successfully! #####\n";
+
+           print "##### Archived Successfully: ". $file->getName() ."\n";
            exit;
        }
    }
